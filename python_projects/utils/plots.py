@@ -147,16 +147,19 @@ def plot_categorical_univariate(df, categorical_cols, figsize=(12, 5), save_path
         value_counts = df[col].value_counts()
         
         # 1. Bar plot
-        sns.barplot(x=value_counts.index, y=value_counts.values, ax=axes[0], palette='viridis')
+        bars = axes[0].bar(range(len(value_counts)), value_counts.values, 
+                        color=sns.color_palette('viridis', len(value_counts)), 
+                        edgecolor='black', alpha=0.8)
+        axes[0].set_xticks(range(len(value_counts)))
+        axes[0].set_xticklabels(value_counts.index, rotation=45)
         axes[0].set_xlabel(col)
         axes[0].set_ylabel('Count')
         axes[0].set_title('Count Plot')
-        axes[0].tick_params(axis='x', rotation=45)
-        
+
         # Add count labels on bars
-        for i, v in enumerate(value_counts.values):
-            axes[0].text(i, v + max(value_counts.values)*0.01, str(v), 
-                        ha='center', va='bottom', fontweight='bold')
+        for i, (bar, v) in enumerate(zip(bars, value_counts.values)):
+            axes[0].text(bar.get_x() + bar.get_width()/2, v + max(value_counts.values)*0.01, 
+                        str(v), ha='center', va='bottom', fontweight='bold')
         
         # 2. Pie chart
         colors = sns.color_palette('viridis', len(value_counts))
@@ -321,14 +324,14 @@ def plot_categorical_vs_target(df, categorical_cols, target_col, figsize=(14, 5)
         # 2. Count plot with hue
         df_plot = df[[col, target_col]].copy()
         df_plot[target_col] = df_plot[target_col].astype(str)
-        sns.countplot(data=df_plot, x=col, hue=target_col, ax=axes[1], palette='Set2')
+        sns.countplot(data=df_plot, x=col, hue=target_col, ax=axes[1], palette='Set2', order=ct.index)
         axes[1].set_xlabel(col)
         axes[1].set_ylabel('Count')
         axes[1].set_title('Count by Category and Target')
         axes[1].legend(title=target_col, labels=[f'{target_col}=0', f'{target_col}=1'])
         axes[1].tick_params(axis='x', rotation=45)
         axes[1].grid(axis='y', alpha=0.3)
-        
+                
         plt.tight_layout()
         
         if save_path:
